@@ -17,5 +17,5 @@ if (profile = client.current_user)
   puts "Saved tokens for @#{user.x_username} (uid=#{user.x_uid})."
 else
   puts "Tokens saved, but couldn't fetch X profile. The token may already be expired — re-run if so."
-  puts "Error: #{profile.inspect}"
+  puts "Error: #{client.inspect}"
 end
