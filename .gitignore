@@ -11,7 +11,15 @@
 /tmp/
 
 # Used by dotenv library to load environment variables.
-# .env
+.env
+.env.local
+
+# Application logs.
+*.log
+log/
+
+# macOS.
+.DS_Store
 
 # Ignore Byebug command history file.
 .byebug_history
