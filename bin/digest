@@ -20,5 +20,5 @@ case result
 when :no_bookmarks
   puts "No bookmarks since #{since}; skipping digest."
 else
-  puts "Sent digest with #{result} bookmark#{result == 1 ? '' : 's'} to #{ENV.fetch('TO_EMAIL', user.email)}."
+  puts "Sent digest with #{result} bookmark#{result == 1 ? '' : 's'} to #{user.email}."
 end

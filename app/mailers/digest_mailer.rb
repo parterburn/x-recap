@@ -15,7 +15,7 @@ class DigestMailer
 
     MailgunClient.send_message(
       from: ENV.fetch("FROM_EMAIL"),
-      to: ENV.fetch("TO_EMAIL", user.email),
+      to: user.email,
       subject: subject,
       html: html,
       tag: "XRecapSummary"

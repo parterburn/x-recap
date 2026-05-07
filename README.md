@@ -70,14 +70,13 @@ This service has two pieces on Railway:
 | Variable | Purpose |
 |---|---|
 | `DATABASE_URL` | Auto-set by the Postgres plugin. |
-| `USER_EMAIL` | The single user this app runs for. |
+| `USER_EMAIL` | The single user this app runs for. The digest is sent here. |
 | `X_CLIENT_ID` | From [developer.x.com](https://developer.x.com). |
 | `X_CLIENT_SECRET` | From [developer.x.com](https://developer.x.com). |
 | `OPENAI_API_KEY` | Used by `AiBookmarkSummarizer` (via `ruby_llm`). |
 | `MAILGUN_API_KEY` | Mailgun account API key. |
 | `SMTP_DOMAIN` | The Mailgun sending domain (e.g. `mg.example.com`). |
 | `FROM_EMAIL` | What appears in the `From:` header. e.g. `X Recap <no-reply@mg.example.com>` |
-| `TO_EMAIL` | Where to send the digest. |
 | `RAINDROP_API_KEY` | Optional — only needed if you want new bookmarks pushed to Raindrop.io. (Stored on the user row; you can also set it via `bin/console`.) |
 
 ### One-time: run migrations on Railway
