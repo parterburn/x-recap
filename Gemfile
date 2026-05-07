@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "3.4.8"
+ruby "4.0.3"
 
 # ActiveRecord stack (no Rails proper).
 gem "activerecord", "~> 7.1"
