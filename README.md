@@ -30,7 +30,7 @@ bundle exec rake db:migrate
 Follow the manual flow described in [docs/X_OAUTH_SETUP.md](docs/X_OAUTH_SETUP.md) to get an access token + refresh token. Then:
 
 ```bash
-bin/setup-tokens you@example.com <access_token> <refresh_token>
+bin/setup-tokens you@example.com <x_access_token> <x_refresh_token>
 ```
 
 The refresh token rotates on every API call from then on — no manual steps again.
@@ -79,7 +79,6 @@ This service has two pieces on Railway:
 | `MAILGUN_API_KEY` | Mailgun account API key. |
 | `SMTP_DOMAIN` | The Mailgun sending domain (e.g. `mg.example.com`). |
 | `FROM_EMAIL` | What appears in the `From:` header. e.g. `X Recap <no-reply@mg.example.com>` |
-| `RAINDROP_API_KEY` | Optional — only needed if you want new bookmarks pushed to Raindrop.io. (Stored on the user row; you can also set it via `bin/console`.) |
 
 ### One-time: seed your X tokens
 
@@ -89,7 +88,7 @@ This service has two pieces on Railway:
 
 ```bash
 DATABASE_URL=$(railway variables --json | jq -r '.DATABASE_PUBLIC_URL') \
-  bin/setup-tokens you@example.com <access_token> <refresh_token>
+  bin/setup-tokens you@example.com <x_access_token> <x_refresh_token>
 ```
 
 (Get `DATABASE_PUBLIC_URL` from the Postgres service's Variables tab if you don't have the Railway CLI handy — it ends in `.proxy.rlwy.net`.)

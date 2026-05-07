@@ -1,20 +1,21 @@
 #!/usr/bin/env ruby
 # One-time: save your X OAuth tokens to the user record.
-# Usage: bin/setup-tokens <email> <access_token> <refresh_token>
+# Usage: bin/setup-tokens <email> <x_access_token> <x_refresh_token>
 # After this runs, the user row exists and tokens auto-refresh on every API call.
 
 require_relative "../config/boot"
 
-email, access_token, refresh_token = ARGV
-abort "usage: bin/setup-tokens <email> <access_token> <refresh_token>" unless email && access_token && refresh_token
+email, x_access_token, x_refresh_token = ARGV
+abort "usage: bin/setup-tokens <email> <x_access_token> <x_refresh_token>" unless email && x_access_token && x_refresh_token
 
 user = User.find_or_initialize_by(email: email)
-user.update!(x_access_token: access_token, x_refresh_token: refresh_token)
+user.update!(x_access_token: x_access_token, x_refresh_token: x_refresh_token)
 
-client = XApiClient.new(access_token: access_token)
+client = XApiClient.new(access_token: x_access_token)
 if (profile = client.current_user)
   user.update!(x_uid: profile.dig("data", "id"), x_username: profile.dig("data", "username"))
   puts "Saved tokens for @#{user.x_username} (uid=#{user.x_uid})."
 else
   puts "Tokens saved, but couldn't fetch X profile. The token may already be expired — re-run if so."
+  puts "Error: #{profile.inspect}"
 end
