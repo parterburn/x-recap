@@ -5,36 +5,21 @@ class AiBookmarkSummarizer
     @bookmarks = bookmarks
     return nil unless @bookmarks.any?
 
-    respond_as_ai
+    chat = RubyLLM.chat(model: MODEL)
+                  .with_instructions(developer_prompt)
+                  .with_params(
+                    reasoning_effort: "medium",
+                    tools: [{ type: "web_search" }]
+                  )
+
+    response = chat.ask(user_prompt)
+    response&.content
   end
 
   private
 
-  def openai_params
-    {
-      input: as_bookmark_summarizer,
-      model: MODEL,
-      reasoning: { effort: "medium" },
-      store: false,
-      tools: [
-        { type: "web_search_preview", search_context_size: "medium" }
-      ]
-    }
-  end
-
-  def respond_as_ai
-    client = OpenAI::Client.new
-    resp = client.responses.create(parameters: openai_params)
-
-    return unless resp["output"].present?
-
-    resp.dig("output").filter { |o| o.dig("type") == "message" }.dig(0, "content", 0, "text")
-  end
-
-  def as_bookmark_summarizer
-    [{
-      role: "developer",
-      content: %(You summarize X bookmarks into a scannable HTML briefing for email.
+  def developer_prompt
+    %(You summarize X bookmarks into a scannable HTML briefing for email.
 
 OUTPUT FORMAT: Raw HTML only. No markdown. No code fences. Use <b>, <i>, <a>, <ul>, <li>, <p> tags.
 
@@ -62,9 +47,10 @@ SECTIONS (in order, all optional — skip if empty):
 RANKING: Prefer high engagement, timely, strategically relevant. Deprioritize memes, vague hot takes, duplicates.
 
 STYLE: Crisp. Practical. The full bookmarks appear below the summary so your job is triage, not reproduction.)
-    }, {
-      role: "user",
-      content: %(Here are my #{ViewHelpers.pluralize(@bookmarks.count, 'X bookmark')}:\n\n#{@bookmarks.map(&:to_s).join("\n\n######\n\n")})
-    }]
+  end
+
+  def user_prompt
+    "Here are my #{ViewHelpers.pluralize(@bookmarks.count, 'X bookmark')}:\n\n" \
+      "#{@bookmarks.map(&:to_s).join("\n\n######\n\n")}"
   end
 end

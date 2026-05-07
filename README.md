@@ -1,9 +1,9 @@
 # x-recap
 
-A tiny single-user service that pulls your **X (Twitter) bookmarks**, summarizes them with an LLM, and emails you a monthly digest. Extracted from [Dabble Me](https://dabble.me) so it can run on its own cheap Railway cron service.
+A tiny single-user service that pulls your **X (Twitter) bookmarks**, summarizes them with an LLM, and emails you a monthly digest.
 
 - **No web tier.** No Sidekiq. No Rails proper.
-- Just Ruby + ActiveRecord + Postgres + Faraday + OpenAI + Mailgun.
+- Just Ruby + ActiveRecord + Postgres + Faraday + ruby_llm + Mailgun.
 - Designed to be invoked as one-shot scripts (`bin/sync`, `bin/digest`) by a Railway cron service.
 
 ## How it works
@@ -61,7 +61,7 @@ This service has two pieces on Railway:
 
 - **Source:** this GitHub repo
 - **Service type:** Cron
-- **Schedule:** `0 16 1 * *` (16:00 UTC on the 1st of each month — same as the original Dabble Me job)
+- **Schedule:** `0 16 1 * *` (16:00 UTC on the 1st of each month)
 - **Start command:** `bundle exec ruby bin/digest`
 - **Env vars:** see below
 
@@ -73,12 +73,11 @@ This service has two pieces on Railway:
 | `USER_EMAIL` | The single user this app runs for. |
 | `X_CLIENT_ID` | From [developer.x.com](https://developer.x.com). |
 | `X_CLIENT_SECRET` | From [developer.x.com](https://developer.x.com). |
-| `OPENAI_ACCESS_TOKEN` | Used by `AiBookmarkSummarizer`. |
-| `MAILGUN_API_KEY` | Same Mailgun account you use for Dabble Me. |
-| `SMTP_DOMAIN` | The Mailgun sending domain (e.g. `post.dabble.me`). |
-| `FROM_EMAIL` | What appears in the `From:` header. e.g. `X Recap <no-reply@post.dabble.me>` |
+| `OPENAI_API_KEY` | Used by `AiBookmarkSummarizer` (via `ruby_llm`). |
+| `MAILGUN_API_KEY` | Mailgun account API key. |
+| `SMTP_DOMAIN` | The Mailgun sending domain (e.g. `mg.example.com`). |
+| `FROM_EMAIL` | What appears in the `From:` header. e.g. `X Recap <no-reply@mg.example.com>` |
 | `TO_EMAIL` | Where to send the digest. |
-| `OPENAI_ORGANIZATION_ID` | Optional — set if your OpenAI account requires it. |
 | `RAINDROP_API_KEY` | Optional — only needed if you want new bookmarks pushed to Raindrop.io. (Stored on the user row; you can also set it via `bin/console`.) |
 
 ### One-time: run migrations on Railway
@@ -102,7 +101,7 @@ railway run --service x-recap-sync \
 
 ## Cost note
 
-Railway is per-second usage-billed; cron services only consume resources during the brief execution window, so the marginal cost on top of an existing Pro plan ($20/mo credit) is rounding-error-level for this workload.
+Railway is per-second usage-billed; cron services only consume resources during the brief execution window, so this workload is rounding-error-level for a typical Hobby ($5/mo credit) or Pro ($20/mo credit) plan.
 
 ## License
 

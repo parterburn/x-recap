@@ -12,8 +12,8 @@ gem "standalone_migrations"
 gem "faraday"
 gem "faraday-retry"
 
-# OpenAI for the AI digest.
-gem "ruby-openai", "~> 7.0"
+# LLM client for the AI digest. Multi-provider; we use OpenAI but could swap.
+gem "ruby_llm"
 
 # Loads .env in development.
 gem "dotenv", require: false
