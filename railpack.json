@@ -1,0 +1,6 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "providers": ["ruby"],
+  "buildAptPackages": ["build-essential", "libpq-dev"],
+  "deployAptPackages": ["libpq5"]
+}

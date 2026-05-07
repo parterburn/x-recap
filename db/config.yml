@@ -1,0 +1,12 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+
+development:
+  <<: *default
+  url: <%= ENV.fetch("DATABASE_URL", "postgres://localhost/x_recap_development") %>
+
+production:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>

@@ -1,0 +1,109 @@
+# x-recap
+
+A tiny single-user service that pulls your **X (Twitter) bookmarks**, summarizes them with an LLM, and emails you a monthly digest. Extracted from [Dabble Me](https://dabble.me) so it can run on its own cheap Railway cron service.
+
+- **No web tier.** No Sidekiq. No Rails proper.
+- Just Ruby + ActiveRecord + Postgres + Faraday + OpenAI + Mailgun.
+- Designed to be invoked as one-shot scripts (`bin/sync`, `bin/digest`) by a Railway cron service.
+
+## How it works
+
+1. **`bin/sync`** — calls the X API, pulls your latest bookmarks, dedupes by `tweet_id`, optionally pushes new ones to Raindrop.io.
+2. **`bin/digest`** — syncs first, then asks OpenAI to summarize this month's bookmarks into a scannable HTML briefing, and emails it to you via Mailgun.
+
+You run `bin/sync` daily and `bin/digest` monthly.
+
+## Setup
+
+### 1. Local dev
+
+```bash
+asdf install            # picks up .tool-versions
+bundle install
+cp .env.example .env    # then fill in real values
+createdb x_recap_development
+bundle exec rake db:migrate
+```
+
+### 2. X OAuth tokens (one-time)
+
+Follow the manual flow described in [docs/X_OAUTH_SETUP.md](docs/X_OAUTH_SETUP.md) to get an access token + refresh token. Then:
+
+```bash
+bin/setup-tokens you@example.com <access_token> <refresh_token>
+```
+
+The refresh token rotates on every API call from then on — no manual steps again.
+
+### 3. Try it locally
+
+```bash
+bin/sync          # pull bookmarks
+bin/digest        # send a digest email for the current month
+```
+
+## Deploy to Railway
+
+This service has two pieces on Railway:
+
+1. **Postgres plugin** — attach the standard Railway Postgres. It sets `DATABASE_URL` automatically.
+2. **One service per cron schedule** — Railway's "Cron" service type runs a one-shot container on a schedule.
+
+### Service: x-recap-sync (daily)
+
+- **Source:** this GitHub repo
+- **Service type:** Cron
+- **Schedule:** `0 16 * * *` (or whatever cadence you want — daily is plenty)
+- **Start command:** `bundle exec ruby bin/sync`
+- **Env vars:** see below
+
+### Service: x-recap-digest (monthly)
+
+- **Source:** this GitHub repo
+- **Service type:** Cron
+- **Schedule:** `0 16 1 * *` (16:00 UTC on the 1st of each month — same as the original Dabble Me job)
+- **Start command:** `bundle exec ruby bin/digest`
+- **Env vars:** see below
+
+### Required env vars (both services)
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Auto-set by the Postgres plugin. |
+| `USER_EMAIL` | The single user this app runs for. |
+| `X_CLIENT_ID` | From [developer.x.com](https://developer.x.com). |
+| `X_CLIENT_SECRET` | From [developer.x.com](https://developer.x.com). |
+| `OPENAI_ACCESS_TOKEN` | Used by `AiBookmarkSummarizer`. |
+| `MAILGUN_API_KEY` | Same Mailgun account you use for Dabble Me. |
+| `SMTP_DOMAIN` | The Mailgun sending domain (e.g. `post.dabble.me`). |
+| `FROM_EMAIL` | What appears in the `From:` header. e.g. `X Recap <no-reply@post.dabble.me>` |
+| `TO_EMAIL` | Where to send the digest. |
+| `OPENAI_ORGANIZATION_ID` | Optional — set if your OpenAI account requires it. |
+| `RAINDROP_API_KEY` | Optional — only needed if you want new bookmarks pushed to Raindrop.io. (Stored on the user row; you can also set it via `bin/console`.) |
+
+### One-time: run migrations on Railway
+
+After the first deploy, run migrations against the production DB:
+
+```bash
+railway run --service x-recap-sync bundle exec rake db:migrate
+```
+
+(Or attach a temporary "Run command" service of your own choice.)
+
+### One-time: seed your X tokens on Railway
+
+After getting your tokens locally:
+
+```bash
+railway run --service x-recap-sync \
+  bin/setup-tokens you@example.com <access_token> <refresh_token>
+```
+
+## Cost note
+
+Railway is per-second usage-billed; cron services only consume resources during the brief execution window, so the marginal cost on top of an existing Pro plan ($20/mo credit) is rounding-error-level for this workload.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

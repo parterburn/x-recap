@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+# Interactive console with the app loaded.
+require_relative "../config/boot"
+require "irb"
+IRB.start
