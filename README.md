@@ -54,7 +54,7 @@ This service has two pieces on Railway:
 - **Source:** this GitHub repo
 - **Service type:** Cron
 - **Schedule:** `0 16 * * *` (or whatever cadence you want — daily is plenty)
-- **Start command:** `bundle exec ruby bin/sync`
+- **Start command:** `bundle exec rake db:migrate && bundle exec ruby bin/sync`
 - **Env vars:** see below
 
 ### Service: x-recap-digest (monthly)
@@ -62,8 +62,10 @@ This service has two pieces on Railway:
 - **Source:** this GitHub repo
 - **Service type:** Cron
 - **Schedule:** `0 16 1 * *` (16:00 UTC on the 1st of each month)
-- **Start command:** `bundle exec ruby bin/digest`
+- **Start command:** `bundle exec rake db:migrate && bundle exec ruby bin/digest`
 - **Env vars:** see below
+
+> Why migrate in the start command? Railway-recommended pattern: it runs inside Railway's private network where `postgres.railway.internal` resolves, and `db:migrate` is idempotent (a no-op when there are no pending migrations) so the cost on each cron tick is negligible. Avoids needing `railway run` or `DATABASE_PUBLIC_URL` for routine schema changes.
 
 ### Required env vars (both services)
 
@@ -79,24 +81,18 @@ This service has two pieces on Railway:
 | `FROM_EMAIL` | What appears in the `From:` header. e.g. `X Recap <no-reply@mg.example.com>` |
 | `RAINDROP_API_KEY` | Optional — only needed if you want new bookmarks pushed to Raindrop.io. (Stored on the user row; you can also set it via `bin/console`.) |
 
-### One-time: run migrations on Railway
+### One-time: seed your X tokens
 
-After the first deploy, run migrations against the production DB:
+`bin/setup-tokens` is the only thing that needs a manual one-time run. The migration runs itself on the next cron tick (see start command above).
 
-```bash
-railway run --service x-recap-sync bundle exec rake db:migrate
-```
-
-(Or attach a temporary "Run command" service of your own choice.)
-
-### One-time: seed your X tokens on Railway
-
-After getting your tokens locally:
+`railway run` injects the *internal* `DATABASE_URL`, which doesn't resolve from your laptop — so for one-shot commands like this, override with the public URL:
 
 ```bash
-railway run --service x-recap-sync \
+DATABASE_URL=$(railway variables --json | jq -r '.DATABASE_PUBLIC_URL') \
   bin/setup-tokens you@example.com <access_token> <refresh_token>
 ```
+
+(Get `DATABASE_PUBLIC_URL` from the Postgres service's Variables tab if you don't have the Railway CLI handy — it ends in `.proxy.rlwy.net`.)
 
 ## Cost note
 
