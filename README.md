@@ -2,6 +2,8 @@
 
 A tiny single-user service that pulls your **X (Twitter) bookmarks**, summarizes them with an LLM, and emails you a monthly digest.
 
+Optionally, it can push your X Bookmarks to Raindrop.io.
+
 - **No web tier.** No Sidekiq. No Rails proper.
 - Just Ruby + ActiveRecord + Postgres + Faraday + ruby_llm + Mailgun.
 - Designed to be invoked as one-shot scripts (`bin/sync`, `bin/digest`) by a Railway cron service.
