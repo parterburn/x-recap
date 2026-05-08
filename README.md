@@ -80,7 +80,7 @@ This service has two pieces on Railway:
 | `OPENAI_API_KEY` | Required when `AI_MODEL` is an OpenAI model. |
 | `MAILGUN_API_KEY` | Mailgun account API key. |
 | `SMTP_DOMAIN` | The Mailgun sending domain (e.g. `mg.example.com`). |
-| `FROM_EMAIL` | What appears in the `From:` header. e.g. `X Recap <no-reply@mg.example.com>` |
+| `FROM_EMAIL` | What appears in the `From:` header. e.g. `X-Recap <no-reply@mg.example.com>` |
 
 ### One-time: seed your X tokens
 
