@@ -1,0 +1,3 @@
+[variables]
+# Ensure Ruby reads gem metadata as UTF-8 in Railway cron containers.
+RUBYOPT = "-EUTF-8:UTF-8"
