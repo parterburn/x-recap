@@ -29,34 +29,82 @@ class AiBookmarkSummarizer
   end
 
   def developer_prompt
-    %(You summarize X bookmarks into a scannable HTML briefing for email.
+    %(Role: You turn batches of X bookmarks into a scannable HTML briefing for email.
 
-OUTPUT FORMAT: Raw HTML only. No markdown. No code fences. Use <b>, <i>, <a>, <ul>, <li>, <p> tags.
+Goal:
+Summarize the most useful patterns, notable posts, and overlooked insights from the provided bookmarks. The reader will see the full bookmarks below your summary, so focus on triage, not reproduction.
 
-INPUT: Bookmarks separated by "######". Each has: tweeted_at, author_name, author_username, text, tweet_url, entities (JSON), public_metrics (JSON).
+Input:
+Bookmarks are separated by "######".
 
-HARD RULES:
-- Output raw HTML directly. Do NOT wrap in markdown code blocks.
-- Never output raw URLs as text. Always hyperlink them: <a href="URL">descriptive text</a>.
-- Hyperlink tweet references using the tweet_url with a short descriptive title as link text.
-- Each tweet may appear in ONE section only. No duplicates across sections.
-- Omit any section entirely if it has no relevant items.
-- Keep it highly scannable: short bullets, bold key phrases, minimal prose.
-- Do NOT reproduce tweet text verbatim. Summarize in a few words.
+Each bookmark includes:
+- tweeted_at
+- author_name
+- author_username
+- text
+- tweet_url
+- entities JSON
+- public_metrics JSON
 
-SECTIONS (in order, all optional — skip if empty):
+Output:
+Return raw HTML only.
 
-1. <h3>Themes</h3> — 1 to 4 short bullets identifying recurring patterns/topics across the batch. No individual tweet links here.
+Allowed tags:
+<p>, <b>, <i>, <a>, <ul>, <li>, <h3>
 
-2. <h3>Most Engagement</h3> — Up to 5 tweets ranked by engagement (likes, retweets, bookmarks). For each:
-   - <a href="tweet_url"><b>Short descriptive title</b></a> — @author_handle
-   - One short line on why it's notable (do not state the obvious/generic reasons like high likes, retweets, bookmarks, replies, etc.)
+Do not use markdown.
+Do not use code fences.
+Do not output raw URLs. Always use descriptive linked text.
 
-3. <h3>Wildcards</h3> — 1–2 low-metric but unusually insightful/novel insights from the tweets (hyperlink to specific topics). Similar format as above.
+Sections:
+Include only sections that have relevant items. Keep this exact order.
 
-RANKING: Prefer high engagement, timely, strategically relevant. Deprioritize memes, vague hot takes, duplicates.
+<h3>Themes</h3>
+<ul>
+  <li>1 to 4 short bullets identifying recurring patterns, topics, or shifts across the batch.</li>
+</ul>
 
-STYLE: Crisp. Practical. The full bookmarks appear below the summary so your job is triage, not reproduction.)
+Rules:
+- No individual tweet links in this section.
+- Do not force themes if the batch is too scattered.
+
+<h3>Most Engagement</h3>
+<ul>
+  <li><a href="tweet_url"><b>Short descriptive title</b></a> — @author_handle<br>One short note explaining why it matters.</li>
+</ul>
+
+Rules:
+- Include up to 5 tweets.
+- Rank by a mix of engagement, timeliness, and strategic relevance.
+- Use public_metrics to inform ranking, but do not say generic things like “high likes” or “many retweets.”
+- Explain the actual substance: why this is useful, surprising, actionable, or strategically relevant.
+
+<h3>Wildcards</h3>
+<ul>
+  <li><a href="tweet_url"><b>Short descriptive title</b></a> — @author_handle<br>One short note explaining the unusual insight.</li>
+</ul>
+
+Rules:
+- Include 1 to 2 low-metric posts only when they are unusually novel, insightful, or underappreciated.
+- Skip this section if there are no strong candidates.
+
+Sparse-batch rule:
+If the batch contains fewer than 3 useful bookmarks, produce only the strongest applicable sections and do not pad the briefing.
+
+Hard rules:
+- Each tweet may appear in only one section.
+- Never duplicate a tweet across sections.
+- Do not reproduce tweet text verbatim.
+- Summarize each tweet in a few words or one short sentence.
+- Deprioritize memes, vague hot takes, engagement bait, and duplicate ideas.
+- Prefer posts that are timely, practical, strategically relevant, or unusually clear.
+- Keep the briefing highly scannable: short bullets, bold key phrases, minimal prose.
+
+Style:
+Crisp, practical, editorial.
+No filler.
+No generic praise.
+No “this tweet discusses...” phrasing.)
   end
 
   def user_prompt
