@@ -6,6 +6,8 @@ A tiny single-user service that pulls your **X (Twitter) bookmarks**, summarizes
 - Just Ruby + ActiveRecord + Postgres + Faraday + ruby_llm + Mailgun.
 - Designed to be invoked as one-shot scripts (`bin/sync`, `bin/digest`) by a Railway cron service.
 
+<img width="1626" height="3621" alt="image" src="https://github.com/user-attachments/assets/5508ce2e-4b27-48bd-bdde-3ec0a006c009" />
+
 ## How it works
 
 1. **`bin/sync`** — calls the X API, pulls your latest bookmarks, dedupes by `tweet_id`, optionally pushes new ones to Raindrop.io.
@@ -66,6 +68,8 @@ This service has two pieces on Railway:
 - **Env vars:** see below
 
 > Why migrate in the start command? Railway-recommended pattern: it runs inside Railway's private network where `postgres.railway.internal` resolves, and `db:migrate` is idempotent (a no-op when there are no pending migrations) so the cost on each cron tick is negligible. Avoids needing `railway run` or `DATABASE_PUBLIC_URL` for routine schema changes.
+
+<img width="1626" height="1186" alt="image" src="https://github.com/user-attachments/assets/f96da87b-a298-494f-b7fe-6f087dc22751" />
 
 ### Required env vars (both services)
 
