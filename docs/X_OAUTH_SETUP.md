@@ -1,6 +1,6 @@
 # X Bookmarks Setup
 
-One-time manual flow to get an OAuth 2.0 **user** token, then save it to your user record. The app auto-refreshes after that — you never need to do this again.
+One-time manual flow to generate OAuth 2.0 **user** tokens in the X Developer Console, then save them to your user record. The app auto-refreshes after that — you never need to do this again.
 
 ## Prerequisites
 
@@ -11,56 +11,30 @@ X_CLIENT_ID=your_client_id
 X_CLIENT_SECRET=your_client_secret
 ```
 
-Register this **Callback URL** in the X Developer Portal:
+Make sure your app has the required user scopes:
 
 ```
-http://localhost:3000/x/callback
+users.read tweet.read bookmark.read offline.access
 ```
-
-(It doesn't need to be a working page — you just grab the code from the address bar.)
 
 ---
 
-## Step 1: Generate a code verifier
+## Step 1: Generate user tokens
 
-```bash
-VERIFIER=$(ruby -rsecurerandom -e 'puts SecureRandom.urlsafe_base64(32)')
-echo $VERIFIER
-```
+In the X Developer Console, open your app settings and generate an OAuth 2.0 access token for your own user. The token panel should show both:
 
-## Step 2: Generate the code challenge
+- `access_token`
+- `refresh_token`
 
-```bash
-CHALLENGE=$(ruby -rdigest -rbase64 -e "puts Base64.urlsafe_encode64(Digest::SHA256.digest('$VERIFIER'), padding: false)")
-echo $CHALLENGE
-```
+The access token is short-lived, but the refresh token is valid for months and lets the app keep refreshing automatically.
 
-## Step 3: Open the authorize URL in your browser
-
-```
-https://x.com/i/oauth2/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fx%2Fcallback&scope=bookmark.read%20tweet.read%20users.read%20offline.access&state=xyz&code_challenge=CHALLENGE&code_challenge_method=S256
-```
-
-Replace `YOUR_CLIENT_ID` and `CHALLENGE`. Click **Authorize app**. The page will 404 — copy the `code=` value from the address bar.
-
-## Step 4: Exchange the code for tokens (within 30 seconds!)
-
-```bash
-curl -s -X POST 'https://api.x.com/2/oauth2/token' \
-  -u 'YOUR_CLIENT_ID:YOUR_CLIENT_SECRET' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  -d "grant_type=authorization_code&code=PASTE_CODE_HERE&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fx%2Fcallback&code_verifier=$VERIFIER"
-```
-
-Response will include `access_token` and `refresh_token`.
-
-## Step 5: Save tokens to your user record
+## Step 2: Save tokens to your user record
 
 ```bash
 bin/setup-tokens you@email.com ACCESS_TOKEN REFRESH_TOKEN
 ```
 
-## Step 6: Fetch bookmarks (auto-refreshes forever)
+## Step 3: Fetch bookmarks
 
 ```bash
 bin/sync
