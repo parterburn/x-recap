@@ -12,7 +12,7 @@ gem "standalone_migrations"
 gem "faraday"
 gem "faraday-retry"
 
-# LLM client for the AI digest. Multi-provider; we use OpenAI but could swap.
+# LLM client for the AI digest. Multi-provider
 gem "ruby_llm"
 
 # Loads .env in development.

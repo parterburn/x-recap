@@ -9,7 +9,7 @@ A tiny single-user service that pulls your **X (Twitter) bookmarks**, summarizes
 ## How it works
 
 1. **`bin/sync`** — calls the X API, pulls your latest bookmarks, dedupes by `tweet_id`, optionally pushes new ones to Raindrop.io.
-2. **`bin/digest`** — syncs first, then asks OpenAI to summarize this month's bookmarks into a scannable HTML briefing, and emails it to you via Mailgun.
+2. **`bin/digest`** — syncs first, then asks xAI/OpenAI to summarize this month's bookmarks into a scannable HTML briefing, and emails it to you via Mailgun.
 
 You run `bin/sync` daily and `bin/digest` monthly.
 
@@ -75,7 +75,9 @@ This service has two pieces on Railway:
 | `USER_EMAIL` | The single user this app runs for. The digest is sent here. |
 | `X_CLIENT_ID` | From [developer.x.com](https://developer.x.com). |
 | `X_CLIENT_SECRET` | From [developer.x.com](https://developer.x.com). |
-| `OPENAI_API_KEY` | Used by `AiBookmarkSummarizer` (via `ruby_llm`). |
+| `AI_MODEL` | Required model for `AiBookmarkSummarizer`, e.g. `grok-4.3` or `gpt-5.5`. |
+| `XAI_API_KEY` | Required when `AI_MODEL` is a Grok/xAI model. |
+| `OPENAI_API_KEY` | Required when `AI_MODEL` is an OpenAI model. |
 | `MAILGUN_API_KEY` | Mailgun account API key. |
 | `SMTP_DOMAIN` | The Mailgun sending domain (e.g. `mg.example.com`). |
 | `FROM_EMAIL` | What appears in the `From:` header. e.g. `X Recap <no-reply@mg.example.com>` |

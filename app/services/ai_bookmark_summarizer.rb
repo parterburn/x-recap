@@ -1,11 +1,9 @@
 class AiBookmarkSummarizer
-  MODEL = "gpt-5.5"
-
   def summarize!(bookmarks:)
     @bookmarks = bookmarks
     return nil unless @bookmarks.any?
 
-    chat = RubyLLM.chat(model: MODEL)
+    chat = RubyLLM.chat(model: model)
                   .with_instructions(developer_prompt)
                   .with_params(
                     reasoning_effort: "medium"
@@ -16,6 +14,19 @@ class AiBookmarkSummarizer
   end
 
   private
+
+  def model
+    validate_llm_config!
+    ENV.fetch("AI_MODEL")
+  end
+
+  def validate_llm_config!
+    raise "AI_MODEL must be set" if ENV["AI_MODEL"].blank?
+
+    return if ENV["XAI_API_KEY"].present? || ENV["OPENAI_API_KEY"].present?
+
+    raise "Set XAI_API_KEY or OPENAI_API_KEY for AiBookmarkSummarizer"
+  end
 
   def developer_prompt
     %(You summarize X bookmarks into a scannable HTML briefing for email.

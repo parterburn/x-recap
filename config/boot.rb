@@ -27,6 +27,7 @@ ActiveRecord::Base.establish_connection(db_config)
 require "ruby_llm"
 RubyLLM.configure do |c|
   c.openai_api_key = ENV["OPENAI_API_KEY"]
+  c.xai_api_key = ENV["XAI_API_KEY"]
 end
 
 # Eager-load app/.
