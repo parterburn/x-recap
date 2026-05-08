@@ -8,8 +8,7 @@ class AiBookmarkSummarizer
     chat = RubyLLM.chat(model: MODEL)
                   .with_instructions(developer_prompt)
                   .with_params(
-                    reasoning_effort: "medium",
-                    tools: [{ type: "web_search" }]
+                    reasoning_effort: "medium"
                   )
 
     response = chat.ask(user_prompt)
