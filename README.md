@@ -32,7 +32,7 @@ bundle exec rake db:migrate
 Follow the manual flow described in [docs/X_OAUTH_SETUP.md](docs/X_OAUTH_SETUP.md) to get an access token + refresh token. Then:
 
 ```bash
-bin/setup-tokens you@example.com <x_access_token> <x_refresh_token>
+bin/setup-tokens you@example.com <x_access_token> <x_refresh_token> [raindrop_api_key]
 ```
 
 The refresh token rotates on every API call from then on — no manual steps again.
@@ -94,7 +94,7 @@ This service has two pieces on Railway:
 
 ```bash
 DATABASE_URL=$(railway variables --json | jq -r '.DATABASE_PUBLIC_URL') \
-  bin/setup-tokens you@example.com <x_access_token> <x_refresh_token>
+  bin/setup-tokens you@example.com <x_access_token> <x_refresh_token> [raindrop_api_key]
 ```
 
 (Get `DATABASE_PUBLIC_URL` from the Postgres service's Variables tab if you don't have the Railway CLI handy — it ends in `.proxy.rlwy.net`.)

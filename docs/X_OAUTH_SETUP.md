@@ -28,10 +28,12 @@ In the X Developer Console, open your app settings and generate an OAuth 2.0 acc
 
 The access token is short-lived, but the refresh token is valid for months and lets the app keep refreshing automatically.
 
+Optionally, grab your Raindrop API key if you want new bookmarks mirrored there.
+
 ## Step 2: Save tokens to your user record
 
 ```bash
-bin/setup-tokens you@email.com ACCESS_TOKEN REFRESH_TOKEN
+bin/setup-tokens you@email.com ACCESS_TOKEN REFRESH_TOKEN [RAINDROP_API_KEY]
 ```
 
 ## Step 3: Fetch bookmarks
