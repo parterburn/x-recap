@@ -4,6 +4,8 @@ class XApiClient
   BASE_URL = "https://api.x.com"
   BOOKMARKS_MAX_RESULTS = 10
 
+  attr_reader :last_error
+
   def initialize(user: nil, access_token: nil)
     @user = user
     @access_token = access_token
@@ -13,7 +15,7 @@ class XApiClient
   # Uses user.x_uid if available, otherwise resolves via /2/users/me.
   def bookmarks(max_results: BOOKMARKS_MAX_RESULTS, pagination_token: nil)
     uid = @user&.x_uid || fetch_my_uid
-    return error_response("Could not resolve user ID") unless uid
+    return error_response(last_error || "Could not resolve user ID") unless uid
 
     params = {
       "max_results" => [[max_results, 1].max, 100].min,
@@ -24,13 +26,29 @@ class XApiClient
     params["pagination_token"] = pagination_token if pagination_token.present?
 
     resp = connection.get("/2/users/#{uid}/bookmarks", params)
-    resp.success? ? resp.body : error_response(resp.body.dig("detail") || "HTTP #{resp.status}")
+    if resp.success?
+      @last_error = nil
+      resp.body
+    else
+      error_response(response_error_message(resp))
+    end
+  rescue Faraday::Error => e
+    error_response(e.message)
   end
 
   # Returns the authenticated user's profile.
   def current_user
     resp = connection.get("/2/users/me", "user.fields" => "id,name,username,profile_image_url")
-    resp.success? ? resp.body : nil
+    if resp.success?
+      @last_error = nil
+      resp.body
+    else
+      @last_error = response_error_message(resp)
+      nil
+    end
+  rescue Faraday::Error => e
+    @last_error = e.message
+    nil
   end
 
   private
@@ -48,7 +66,29 @@ class XApiClient
   end
 
   def error_response(message)
+    @last_error = message
     { "data" => nil, "errors" => [{ "message" => message }], "meta" => { "result_count" => 0 } }
+  end
+
+  def response_error_message(resp)
+    messages = []
+    body = resp.body
+
+    if body.is_a?(Hash)
+      messages.concat(Array(body["errors"]).filter_map { |error| error_message(error) })
+      messages << body["detail"] << body["title"] << body["message"]
+    elsif body.present?
+      messages << body.to_s
+    end
+
+    messages.compact_blank.join("; ").presence || "HTTP #{resp.status}"
+  end
+
+  def error_message(error)
+    return error.to_s if error.is_a?(String)
+    return unless error.is_a?(Hash)
+
+    error["message"] || error["detail"] || error["title"]
   end
 
   def connection
