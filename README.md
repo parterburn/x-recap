@@ -8,10 +8,10 @@ A tiny single-user service that pulls your **X (Twitter) bookmarks**, summarizes
 
 ## How it works
 
-1. **`bin/sync`** — calls the X API, pulls your latest bookmarks, dedupes by `tweet_id`, optionally pushes new ones to Raindrop.io.
+1. **`bin/sync`** — calls the X API, pulls your latest bookmarks, dedupes by `tweet_id`, optionally pushes new ones to Raindrop.io. Add a number to the end `bin/sync 30` to limit the number of API calls (pulls up to 30 bookmarks how ever often you run this command).
 2. **`bin/digest`** — syncs first, then asks xAI/OpenAI to summarize this month's bookmarks into a scannable HTML briefing, and emails it to you via Mailgun.
 
-You run `bin/sync` daily and `bin/digest` monthly.
+You run `bin/sync 30` daily/weekly (depending on bookmarking volume) and `bin/digest` monthly.
 
 ## Setup
 
@@ -38,7 +38,7 @@ The refresh token rotates on every API call from then on — no manual steps aga
 ### 3. Try it locally
 
 ```bash
-bin/sync          # pull bookmarks
+bin/sync 30       # pull latest bookmarks (up to 30)
 bin/digest        # send a digest email for the current month
 ```
 
@@ -54,7 +54,7 @@ This service has two pieces on Railway:
 - **Source:** this GitHub repo
 - **Service type:** Cron
 - **Schedule:** `0 16 * * *` (or whatever cadence you want — daily is plenty)
-- **Start command:** `bundle exec rake db:migrate && bundle exec ruby bin/sync`
+- **Start command:** `bundle exec rake db:migrate && bundle exec ruby bin/sync 30`
 - **Env vars:** see below
 
 ### Service: x-recap-digest (monthly)

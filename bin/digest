@@ -1,18 +1,19 @@
 #!/usr/bin/env ruby
 # Sync + send the monthly bookmarks digest email.
-# Usage: bin/digest [since_iso]
+# Usage: bin/digest [max_results] [since_iso]
 #   since_iso defaults to the start of the current month.
 
 require_relative "../config/boot"
 
 email = ENV.fetch("USER_EMAIL")
-since = ARGV[0] ? DateTime.parse(ARGV[0]) : DateTime.now.beginning_of_month
+max_results = (ARGV[0] || 30).to_i
+since = ARGV[1] ? DateTime.parse(ARGV[1]) : DateTime.now.beginning_of_month
 
 user = User.find_by!(email: email)
 abort "User #{email} is not connected to X (no refresh token)." unless user.x_connected?
 
 # Pull fresh bookmarks first so the digest reflects the latest state.
-new_count = XBookmark.sync_for_user!(user, max_results: 30)
+new_count = XBookmark.sync_for_user!(user, max_results: max_results)
 puts "Synced #{new_count} new bookmark#{new_count == 1 ? '' : 's'} before digest."
 
 result = DigestMailer.send_summary!(user: user, since: since)
