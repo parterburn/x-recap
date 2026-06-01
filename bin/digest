@@ -7,7 +7,7 @@ require_relative "../config/boot"
 
 email = ENV.fetch("USER_EMAIL")
 max_results = (ARGV[0] || 30).to_i
-since = ARGV[1] ? DateTime.parse(ARGV[1]) : DateTime.now.beginning_of_month
+since = ARGV[1] ? DateTime.parse(ARGV[1]) : 1.month.ago.beginning_of_month
 
 user = User.find_by!(email: email)
 abort "User #{email} is not connected to X (no refresh token)." unless user.x_connected?
